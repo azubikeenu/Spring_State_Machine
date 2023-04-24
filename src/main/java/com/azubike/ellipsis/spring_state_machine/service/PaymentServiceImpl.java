@@ -3,6 +3,7 @@ package com.azubike.ellipsis.spring_state_machine.service;
 import com.azubike.ellipsis.spring_state_machine.domain.Payment;
 import com.azubike.ellipsis.spring_state_machine.domain.PaymentEvents;
 import com.azubike.ellipsis.spring_state_machine.domain.PaymentState;
+import com.azubike.ellipsis.spring_state_machine.listeners.PaymentStateChangeInterceptor;
 import com.azubike.ellipsis.spring_state_machine.repo.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +18,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentServiceImpl implements PaymentService {
-    private final String PAYMENT_ID = "payment_id";
+    public final static String PAYMENT_ID = "payment_id";
     private final PaymentRepository paymentRepository;
+
+    private final PaymentStateChangeInterceptor paymentStateChangeInterceptor;
     private final StateMachineFactory<PaymentState ,PaymentEvents> factory;
     @Override
     public Payment newPayment(final Payment payment) {
@@ -29,22 +32,22 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public StateMachine<PaymentState, PaymentEvents> preAuthorize(final long paymentId) {
         var sm = build(paymentId);
-        sendEvent(paymentId , sm , PaymentEvents.PRE_AUTHORIZE);
-        return null;
+        sendEvent(paymentId , sm , PaymentEvents.PRE_AUTH_APPROVED);
+        return sm;
     }
 
     @Override
     public StateMachine<PaymentState, PaymentEvents> authorize(final long paymentId) {
         var sm = build(paymentId);
         sendEvent(paymentId , sm , PaymentEvents.AUTH_APPROVED);
-        return null;
+        return sm;
     }
 
     @Override
     public StateMachine<PaymentState, PaymentEvents> delcineAuth(final long paymentId) {
         var sm = build(paymentId);
         sendEvent(paymentId , sm , PaymentEvents.AUTH_DECLINED);
-        return null;
+        return sm;
     }
 
     private void sendEvent(long paymentId , StateMachine<PaymentState ,PaymentEvents> sm , PaymentEvents event){
@@ -61,6 +64,7 @@ public class PaymentServiceImpl implements PaymentService {
         final StateMachine<PaymentState, PaymentEvents> sm = factory.getStateMachine(Long.toString(payment.getId()));
         sm.stop();
         sm.getStateMachineAccessor().doWithAllRegions( sma -> {
+            sma.addStateMachineInterceptor(paymentStateChangeInterceptor);
           sma.resetStateMachine(new DefaultStateMachineContext<>(payment.getPaymentState() , null , null, null));
         });
         sm.start();
