@@ -3,6 +3,7 @@ package com.azubike.ellipsis.spring_state_machine.config;
 import com.azubike.ellipsis.spring_state_machine.actions.PaymentActions;
 import com.azubike.ellipsis.spring_state_machine.domain.PaymentEvents;
 import com.azubike.ellipsis.spring_state_machine.domain.PaymentState;
+import com.azubike.ellipsis.spring_state_machine.guards.PaymentGuards;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import java.util.EnumSet;
 @RequiredArgsConstructor
 public class StateMachineConfig extends StateMachineConfigurerAdapter<PaymentState , PaymentEvents> {
     private final PaymentActions paymentActions ;
+    private final PaymentGuards paymentGuards;
     @Override
     public void configure(final StateMachineStateConfigurer<PaymentState, PaymentEvents> states) throws Exception {
         states.withStates()
@@ -33,11 +35,14 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<PaymentSta
     @Override
     public void configure(final StateMachineTransitionConfigurer<PaymentState, PaymentEvents> transitions) throws Exception {
         transitions.withExternal()
-                .source(PaymentState.NEW).target(PaymentState.NEW).event(PaymentEvents.PRE_AUTHORIZE).action(paymentActions.preAuthAction())
+                .source(PaymentState.NEW).target(PaymentState.NEW).event(PaymentEvents.PRE_AUTHORIZE)
+                .action(paymentActions.preAuthAction()).guard(paymentGuards.requirePaymentId())
                 .and()
-                .withExternal().source(PaymentState.NEW).target(PaymentState.PRE_AUTH_ERROR).event(PaymentEvents.PRE_AUTH_DECLINE)
+                .withExternal().source(PaymentState.NEW).target(PaymentState.PRE_AUTH_ERROR)
+                .event(PaymentEvents.PRE_AUTH_DECLINE).guard(paymentGuards.requirePaymentId())
                 .and()
-                .withExternal().source(PaymentState.NEW).target(PaymentState.PRE_AUTH).event(PaymentEvents.PRE_AUTH_APPROVED);
+                .withExternal().source(PaymentState.NEW).target(PaymentState.PRE_AUTH).event(PaymentEvents.PRE_AUTH_APPROVED)
+                .guard(paymentGuards.requirePaymentId());
     }
 
 

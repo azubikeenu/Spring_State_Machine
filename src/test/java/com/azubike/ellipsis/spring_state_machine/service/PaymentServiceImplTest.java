@@ -4,6 +4,7 @@ import com.azubike.ellipsis.spring_state_machine.domain.Payment;
 import com.azubike.ellipsis.spring_state_machine.domain.PaymentState;
 import com.azubike.ellipsis.spring_state_machine.repo.PaymentRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,7 +28,8 @@ class PaymentServiceImplTest {
         payment = Payment.builder().amount(new BigDecimal("12.99")).build();
     }
 
-    @Test
+
+    @RepeatedTest(10)
     void preAuthorize() {
         final Payment savedPayment = paymentService.newPayment(payment);
         assertThat(savedPayment.getPaymentState()).isEqualTo(PaymentState.NEW);
