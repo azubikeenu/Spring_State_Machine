@@ -30,6 +30,7 @@ public class PaymentStateChangeInterceptor extends StateMachineInterceptorAdapte
                 .flatMap(msg -> Optional.ofNullable(msg.getHeaders().getOrDefault(PaymentServiceImpl.PAYMENT_ID, -1L)))
                 .flatMap(paymentId -> paymentRepository.findById((long) paymentId))
                 .ifPresent(payment -> {
+                    // sets the paymentState to the current state of the state machine
                     payment.setPaymentState(state.getId());
             paymentRepository.save(payment);
         });

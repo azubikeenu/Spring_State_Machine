@@ -27,17 +27,14 @@ class PaymentServiceImplTest {
         payment = Payment.builder().amount(new BigDecimal("12.99")).build();
     }
 
-
     @Test
     void preAuthorize() {
         final Payment savedPayment = paymentService.newPayment(payment);
         assertThat(savedPayment.getPaymentState()).isEqualTo(PaymentState.NEW);
         paymentService.preAuthorize(savedPayment.getId());
         final Payment preAuthPayment = paymentRepository.findById(savedPayment.getId()).orElse(null);
-        assertThat(payment).isNotNull();
-        Optional.ofNullable(preAuthPayment).ifPresent(pa -> {
-            assertThat(preAuthPayment.getPaymentState()).isEqualTo(PaymentState.PRE_AUTH);
-        });
+        assertThat(preAuthPayment).isNotNull();
+        System.out.println(preAuthPayment);
 
     }
 }

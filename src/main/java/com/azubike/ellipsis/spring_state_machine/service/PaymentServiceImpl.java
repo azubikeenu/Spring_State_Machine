@@ -32,7 +32,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public StateMachine<PaymentState, PaymentEvents> preAuthorize(final long paymentId) {
         var sm = build(paymentId);
-        sendEvent(paymentId , sm , PaymentEvents.PRE_AUTH_APPROVED);
+        sendEvent(paymentId , sm , PaymentEvents.PRE_AUTHORIZE);
         return sm;
     }
 
@@ -50,6 +50,12 @@ public class PaymentServiceImpl implements PaymentService {
         return sm;
     }
 
+    /**
+     *  This method extends the message object to contain the Id of the persisted payment
+     * @param paymentId
+     * @param sm
+     * @param event
+     */
     private void sendEvent(long paymentId , StateMachine<PaymentState ,PaymentEvents> sm , PaymentEvents event){
         final Message<PaymentEvents> message = MessageBuilder
                 .withPayload(event)
@@ -59,6 +65,11 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     //TODO make state machine reactive/non-blocking
+    /**
+     * This mutates the state machine with the payment state  of the processed payment and adds an interceptor
+     * to listen for state changed events
+     */
+
     private StateMachine<PaymentState ,PaymentEvents> build(long paymentId){
         final Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new RuntimeException("Payment not found"));
         final StateMachine<PaymentState, PaymentEvents> sm = factory.getStateMachine(Long.toString(payment.getId()));

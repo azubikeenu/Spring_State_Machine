@@ -1,7 +1,9 @@
 package com.azubike.ellipsis.spring_state_machine.config;
 
+import com.azubike.ellipsis.spring_state_machine.actions.PaymentActions;
 import com.azubike.ellipsis.spring_state_machine.domain.PaymentEvents;
 import com.azubike.ellipsis.spring_state_machine.domain.PaymentState;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachineFactory;
@@ -17,7 +19,9 @@ import java.util.EnumSet;
 @Configuration
 @Slf4j
 @EnableStateMachineFactory
+@RequiredArgsConstructor
 public class StateMachineConfig extends StateMachineConfigurerAdapter<PaymentState , PaymentEvents> {
+    private final PaymentActions paymentActions ;
     @Override
     public void configure(final StateMachineStateConfigurer<PaymentState, PaymentEvents> states) throws Exception {
         states.withStates()
@@ -29,7 +33,7 @@ public class StateMachineConfig extends StateMachineConfigurerAdapter<PaymentSta
     @Override
     public void configure(final StateMachineTransitionConfigurer<PaymentState, PaymentEvents> transitions) throws Exception {
         transitions.withExternal()
-                .source(PaymentState.NEW).target(PaymentState.NEW).event(PaymentEvents.PRE_AUTHORIZE)
+                .source(PaymentState.NEW).target(PaymentState.NEW).event(PaymentEvents.PRE_AUTHORIZE).action(paymentActions.preAuthAction())
                 .and()
                 .withExternal().source(PaymentState.NEW).target(PaymentState.PRE_AUTH_ERROR).event(PaymentEvents.PRE_AUTH_DECLINE)
                 .and()
