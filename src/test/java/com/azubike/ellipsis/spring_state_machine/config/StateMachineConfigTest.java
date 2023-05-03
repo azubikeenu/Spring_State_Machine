@@ -27,6 +27,7 @@ class StateMachineConfigTest {
         stateMachine.sendEvent(PaymentEvents.PRE_AUTHORIZE);
         stateMachine.sendEvent(PaymentEvents.PRE_AUTH_APPROVED);
         stateMachine.sendEvent(PaymentEvents.PRE_AUTH_DECLINE);
+
     }
 
 }

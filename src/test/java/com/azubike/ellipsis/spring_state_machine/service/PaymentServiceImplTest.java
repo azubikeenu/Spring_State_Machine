@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.util.EnumSet;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -36,7 +37,7 @@ class PaymentServiceImplTest {
         paymentService.preAuthorize(savedPayment.getId());
         final Payment preAuthPayment = paymentRepository.findById(savedPayment.getId()).orElse(null);
         assertThat(preAuthPayment).isNotNull();
-        System.out.println(preAuthPayment);
+        assertThat(preAuthPayment.getPaymentState()).isIn(EnumSet.of(PaymentState.PRE_AUTH , PaymentState.PRE_AUTH_ERROR));
 
     }
 }

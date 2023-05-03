@@ -20,6 +20,7 @@ import java.util.Optional;
 public class PaymentStateChangeInterceptor extends StateMachineInterceptorAdapter<PaymentState , PaymentEvents> {
     private final  PaymentRepository paymentRepository;
 
+    // Save the state to the database before the state transitions
     @Override
     public void preStateChange(final State<PaymentState, PaymentEvents> state, final Message<PaymentEvents> message,
                                final Transition<PaymentState, PaymentEvents> transition,

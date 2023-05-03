@@ -51,7 +51,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     /**
-     *  This method extends the message object to contain the Id of the persisted payment
+     *  This method extends the message object to contain the id of the persisted payment
      * @param paymentId
      * @param sm
      * @param event
@@ -66,16 +66,20 @@ public class PaymentServiceImpl implements PaymentService {
 
     //TODO make state machine reactive/non-blocking
     /**
-     * This mutates the state machine with the payment state  of the processed payment and adds an interceptor
+     * This mutates the state machine with the payment state of the processed payment and adds an interceptor
      * to listen for state changed events
      */
 
     private StateMachine<PaymentState ,PaymentEvents> build(long paymentId){
         final Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new RuntimeException("Payment not found"));
+        // get the instance of the stateMachine
         final StateMachine<PaymentState, PaymentEvents> sm = factory.getStateMachine(Long.toString(payment.getId()));
         sm.stop();
+
+
         sm.getStateMachineAccessor().doWithAllRegions( sma -> {
             sma.addStateMachineInterceptor(paymentStateChangeInterceptor);
+            // this hydrates the state of the stateMachine with the persisted state
           sma.resetStateMachine(new DefaultStateMachineContext<>(payment.getPaymentState() , null , null, null));
         });
         sm.start();
